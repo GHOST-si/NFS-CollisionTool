@@ -21,6 +21,7 @@
   <!-- Release: do not copy the .pdb to the output folder. -->
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
+  <DebugType>none</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
