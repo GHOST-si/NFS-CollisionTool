@@ -426,3 +426,13 @@ FodyWeavers.xsd
 
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
+
+# Embedded Python runtime (downloaded by Tools/Get-Python.ps1 on first build)
+/Python/
+
+# Local build/release output
+*.zip
+
+# Samples for testing
+!Samples/**/*.obj
+!Samples/**/*.bin
