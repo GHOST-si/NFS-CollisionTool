@@ -1,0 +1,101 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>NFS CollisionTool</AssemblyName>
+    <Product>NFS Collision Tool</Product>
+    <AssemblyTitle>NFS Collision Tool</AssemblyTitle>
+    <Version>1.5.9</Version>
+    <Authors>GHOST-si</Authors>
+    <Copyright>Copyright (c) 2026 GHOST-si</Copyright>
+    <RepositoryUrl>https://github.com/GHOST-si/NFS-CollisionTool</RepositoryUrl>
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+    <!-- Skip the IntelliSense .xml files shipped with NuGet packages. The package DLLs stay next to the exe. -->
+    <AllowedReferenceRelatedFileExtensions>none</AllowedReferenceRelatedFileExtensions>
+  </PropertyGroup>
+
+  <!-- Release: do not copy the .pdb to the output folder. -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4191.47" />
+  </ItemGroup>
+
+  <!-- App.xaml is not in the project root, so it has to be declared as the application definition. -->
+  <ItemGroup>
+    <ApplicationDefinition Include="src\App.xaml" />
+    <Page Remove="src\App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\icon.ico" />
+    <Resource Include="Assets\icon.ico">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+  <!-- Files copied next to the executable (README.txt comes from Docs\). Engine\, Python\ are handled by the targets below. -->
+  <ItemGroup>
+    <None Update="LICENSE;LICENSE-three.js.txt;THIRD-PARTY-NOTICES.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Docs\README.txt" Link="README.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Samples\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <!--
+    Engine\ (core.py, SurfaceNames.txt, Dependencies\*.js) is copied next to
+    the built executable on every build and publish. Anything added under
+    Engine\ is picked up automatically.
+  -->
+  <Target Name="CopyEngineFiles" AfterTargets="Build">
+    <ItemGroup>
+      <EngineFiles Include="$(MSBuildProjectDirectory)\Engine\**\*.*" Condition="Exists('$(MSBuildProjectDirectory)\Engine')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(EngineFiles)" DestinationFolder="$(OutDir)Engine\%(RecursiveDir)" SkipUnchangedFiles="true" Condition="'@(EngineFiles)' != ''" />
+  </Target>
+
+  <Target Name="CopyEngineFilesPublish" AfterTargets="Publish">
+    <ItemGroup>
+      <EngineFilesPublish Include="$(MSBuildProjectDirectory)\Engine\**\*.*" Condition="Exists('$(MSBuildProjectDirectory)\Engine')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(EngineFilesPublish)" DestinationFolder="$(PublishDir)Engine\%(RecursiveDir)" SkipUnchangedFiles="true" Condition="'@(EngineFilesPublish)' != ''" />
+  </Target>
+
+  <!--
+    Embedded Python (Python\pythonw.exe) is not stored in the repository.
+    If the folder is missing, Tools\Get-Python.ps1 downloads the official
+    "embeddable package" from python.org before the build. If that fails
+    (e.g. offline) the build still succeeds with a warning; see README.md
+    for the manual step. Without a bundled Python the app falls back to
+    python/pythonw on PATH.
+  -->
+  <Target Name="FetchPython" BeforeTargets="CopyPythonFiles;CopyPythonFilesPublish" Condition="!Exists('$(MSBuildProjectDirectory)\Python\pythonw.exe')">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\Tools\Get-Python.ps1&quot;" ContinueOnError="true" />
+  </Target>
+
+  <Target Name="CopyPythonFiles" AfterTargets="Build">
+    <ItemGroup>
+      <PythonFiles Include="$(MSBuildProjectDirectory)\Python\**\*.*" Condition="Exists('$(MSBuildProjectDirectory)\Python')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PythonFiles)" DestinationFolder="$(OutDir)Python\%(RecursiveDir)" SkipUnchangedFiles="true" Condition="'@(PythonFiles)' != ''" />
+  </Target>
+
+  <Target Name="CopyPythonFilesPublish" AfterTargets="Publish">
+    <ItemGroup>
+      <PythonFilesPublish Include="$(MSBuildProjectDirectory)\Python\**\*.*" Condition="Exists('$(MSBuildProjectDirectory)\Python')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PythonFilesPublish)" DestinationFolder="$(PublishDir)Python\%(RecursiveDir)" SkipUnchangedFiles="true" Condition="'@(PythonFilesPublish)' != ''" />
+  </Target>
+
+</Project>

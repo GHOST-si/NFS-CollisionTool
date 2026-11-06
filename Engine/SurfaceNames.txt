@@ -1,0 +1,13 @@
+# Surface Names
+carbody = 0x99DA6531
+metal = 0xBA404853
+glass = 0x1D5F6D70
+plastic = 0xA08BA2DA
+bumper = 0x1F4B1746
+wheels = 0x6D18DC74
+rotors = 0xC7DB1147
+
+wood = 0x52E42012
+stone = 0x02FC0FC9
+
+
